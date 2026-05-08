@@ -2,6 +2,7 @@ services:
   - type: web
     name: soms-api
     runtime: node
+    rootDir: server
     buildCommand: npm install --include=dev && npm run build
     startCommand: npm start
     envVars:
