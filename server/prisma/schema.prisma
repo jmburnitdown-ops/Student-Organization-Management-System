@@ -1,0 +1,123 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STUDENT
+}
+
+enum MembershipStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum EventStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id          String       @id @default(uuid())
+  email       String       @unique
+  password    String
+  firstName   String       @map("first_name")
+  lastName    String       @map("last_name")
+  role        Role         @default(STUDENT)
+  avatarUrl   String?      @map("avatar_url")
+  bio         String?
+  studentId   String?      @unique @map("student_id")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  memberships Membership[]
+  documents   Document[]
+  createdOrgs Organization[] @relation("OrgCreator")
+
+  @@map("users")
+}
+
+model Organization {
+  id          String       @id @default(uuid())
+  name        String
+  slug        String       @unique
+  description String?
+  logoUrl     String?      @map("logo_url")
+  category    String?
+  isActive    Boolean      @default(true) @map("is_active")
+  createdById String?      @map("created_by_id")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  createdBy   User?        @relation("OrgCreator", fields: [createdById], references: [id])
+  memberships Membership[]
+  events      Event[]
+  documents   Document[]
+
+  @@map("organizations")
+}
+
+model Membership {
+  id             String           @id @default(uuid())
+  userId         String           @map("user_id")
+  organizationId String           @map("organization_id")
+  status         MembershipStatus @default(PENDING)
+  role           String           @default("member")
+  joinedAt       DateTime?        @map("joined_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@map("memberships")
+}
+
+model Event {
+  id             String      @id @default(uuid())
+  title          String
+  description    String?
+  location       String?
+  startDate      DateTime    @map("start_date")
+  endDate        DateTime    @map("end_date")
+  status         EventStatus @default(UPCOMING)
+  imageUrl       String?     @map("image_url")
+  maxAttendees   Int?        @map("max_attendees")
+  organizationId String      @map("organization_id")
+  createdById    String?     @map("created_by_id")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("events")
+}
+
+model Document {
+  id             String       @id @default(uuid())
+  title          String
+  description    String?
+  fileUrl        String       @map("file_url")
+  fileType       String?      @map("file_type")
+  fileSize       Int?         @map("file_size")
+  uploadedById   String?      @map("uploaded_by_id")
+  organizationId String?      @map("organization_id")
+  isPublic       Boolean      @default(false) @map("is_public")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  uploadedBy     User?        @relation(fields: [uploadedById], references: [id])
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  @@map("documents")
+}
