@@ -2,7 +2,7 @@ services:
   - type: web
     name: soms-api
     runtime: node
-    buildCommand: npm install && npm run build && npx prisma generate
+    buildCommand: npm install --include=dev && npx prisma generate && npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV

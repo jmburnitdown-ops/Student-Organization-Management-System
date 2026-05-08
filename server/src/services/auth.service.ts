@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { AppError } from '../middleware/errorHandler';
 import { JwtPayload } from '../types';
 import { supabase } from '../utils/supabase';
@@ -47,11 +47,14 @@ function mapPublicUser(user: DbUser) {
 }
 
 function generateTokens(payload: JwtPayload) {
+  const accessTokenExpiresIn = (process.env.JWT_EXPIRES_IN || '7d') as SignOptions['expiresIn'];
+  const refreshTokenExpiresIn = (process.env.JWT_REFRESH_EXPIRES_IN || '30d') as SignOptions['expiresIn'];
+
   const accessToken = jwt.sign(payload, process.env.JWT_SECRET!, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+    expiresIn: accessTokenExpiresIn,
   });
   const refreshToken = jwt.sign(payload, process.env.JWT_SECRET!, {
-    expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
+    expiresIn: refreshTokenExpiresIn,
   });
   return { accessToken, refreshToken };
 }
