@@ -26,6 +26,6 @@ services:
       - key: JWT_EXPIRES_IN
         value: 7d
       - key: ALLOWED_ORIGINS
-        value: https://soms-app.vercel.app
+        value: https://student-organization-management-sys.vercel.app,https://student-organization-management-system.vercel.app
       - key: SUPABASE_BUCKET
         value: soms-documents

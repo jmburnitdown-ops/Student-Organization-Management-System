@@ -11,7 +11,7 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       { url: 'http://localhost:3000/api', description: 'Development' },
-      { url: 'https://soms-api.onrender.com/api', description: 'Production' },
+      { url: 'https://student-organization-management-system.onrender.com/api', description: 'Production' },
     ],
     components: {
       securitySchemes: {

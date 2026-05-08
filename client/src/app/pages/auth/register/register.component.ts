@@ -117,7 +117,19 @@ export class RegisterComponent {
     const { firstName, lastName, email, password, studentId } = this.form.value;
     this.auth.register({ firstName: firstName!, lastName: lastName!, email: email!, password: password!, studentId: studentId || undefined }).subscribe({
       next: () => this.router.navigate(['/dashboard']),
-      error: (err) => { this.error.set(err.error?.message || 'Registration failed.'); this.loading.set(false); },
+      error: (err) => { this.error.set(this.getErrorMessage(err)); this.loading.set(false); },
     });
+  }
+
+  private getErrorMessage(err: unknown): string {
+    if (typeof err === 'object' && err && 'error' in err) {
+      const error = (err as { error?: unknown }).error;
+      if (typeof error === 'object' && error && 'message' in error) {
+        const message = (error as { message?: unknown }).message;
+        if (typeof message === 'string' && message.trim()) return message;
+      }
+    }
+
+    return 'Registration failed. Please check your details and try again.';
   }
 }

@@ -27,12 +27,40 @@ if (missingEnv.length > 0) {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const configuredOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const defaultAllowedOrigins = [
+  'http://localhost:4200',
+  'https://student-organization-management-sys.vercel.app',
+  'https://student-organization-management-system.vercel.app',
+];
+
+const allowedOrigins = new Set([...configuredOrigins, ...defaultAllowedOrigins]);
+const allowedVercelHostPattern = /^student-organization-management-(?:sys|system)(?:-[a-z0-9-]+)?\.vercel\.app$/;
+
+function isAllowedOrigin(origin?: string): boolean {
+  if (!origin) return true;
+  if (allowedOrigins.has(origin)) return true;
+
+  try {
+    const { hostname } = new URL(origin);
+    return allowedVercelHostPattern.test(hostname);
+  } catch {
+    return false;
+  }
+}
+
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: (process.env.ALLOWED_ORIGINS || '').split(','),
+  origin: (origin, callback) => {
+    callback(null, isAllowedOrigin(origin) ? origin || true : false);
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
